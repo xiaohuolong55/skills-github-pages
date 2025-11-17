@@ -3,267 +3,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>妈妈，生日快乐！</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script>
-        // 配置Tailwind自定义主题
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#FF6B8B',
-                        secondary: '#FFD1DC',
-                        accent: '#FF9EBB',
-                        dark: '#8B5A2B',
-                        light: '#FFF9E8'
-                    },
-                    fontFamily: {
-                        cute: ['"Comic Sans MS"', '"Bubblegum Sans"', 'cursive'],
-                    },
-                }
-            }
+    <title>经典贪吃蛇游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-    </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .text-shadow {
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            }
-            .text-shadow-lg {
-                text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
-            }
-            .animate-float {
-                animation: float 3s ease-in-out infinite;
-            }
-            .animate-pulse-slow {
-                animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-            }
-            .animate-sparkle {
-                animation: sparkle 2s linear infinite;
-            }
-            .heart {
-                position: absolute;
-                width: 20px;
-                height: 20px;
-                background-color: theme('colors.primary');
-                transform: rotate(45deg);
-                animation: heart-fall 3s ease-in-out infinite;
-            }
-            .heart:before, .heart:after {
-                content: '';
-                width: 20px;
-                height: 20px;
-                background-color: theme('colors.primary');
-                border-radius: 50%;
-                position: absolute;
-            }
-            .heart:before {
-                top: -10px;
-                left: 0;
-            }
-            .heart:after {
-                top: 0;
-                left: -10px;
-            }
-            @keyframes float {
-                0%, 100% { transform: translateY(0); }
-                50% { transform: translateY(-15px); }
-            }
-            @keyframes sparkle {
-                0%, 100% { opacity: 1; transform: scale(1); }
-                50% { opacity: 0.7; transform: scale(1.1); }
-            }
-            @keyframes heart-fall {
-                0% {
-                    transform: rotate(45deg) translateY(-50px) scale(0.5);
-                    opacity: 0;
-                }
-                10% {
-                    opacity: 1;
-                }
-                90% {
-                    opacity: 1;
-                }
-                100% {
-                    transform: rotate(45deg) translateY(100vh) scale(0.8);
-                    opacity: 0;
-                }
-            }
-            .candle-flame {
-                position: absolute;
-                width: 15px;
-                height: 25px;
-                background: radial-gradient(circle, #FFD700 0%, #FFA500 70%, #FF4500 100%);
-                border-radius: 50% 50% 20% 20%;
-                animation: flame 1s ease-in-out infinite alternate;
-                box-shadow: 0 0 10px #FFA500, 0 0 20px #FF4500;
-            }
-            @keyframes flame {
-                0% {
-                    transform: scaleY(1) scaleX(0.9);
-                    height: 25px;
-                }
-                100% {
-                    transform: scaleY(1.2) scaleX(1);
-                    height: 30px;
-                }
-            }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #1a1a1a;
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            color: #4CAF50;
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 400px;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        #score {
+            color: #FFEB3B;
+        }
+
+        #game-over {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            color: #F44336;
+            display: none;
+        }
+
+        #game-board {
+            border: 3px solid #4CAF50;
+            background-color: #2d2d2d;
+            border-radius: 5px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #388E3C;
         }
     </style>
 </head>
-<body class="bg-gradient-to-b from-light to-secondary min-h-screen overflow-hidden font-cute relative">
-    <!-- 爱心飘落效果容器 -->
-    <div id="hearts-container" class="fixed inset-0 pointer-events-none z-0"></div>
-
-    <!-- 页面内容 -->
-    <div class="container mx-auto px-4 py-8 relative z-10">
-        <!-- 标题区域 -->
-        <header class="text-center mb-8 pt-6">
-            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-primary text-shadow-lg mb-2 animate-float">
-                妈妈，生日快乐！
-            </h1>
-            <p class="text-[clamp(1rem,2vw,1.25rem)] text-dark text-shadow max-w-2xl mx-auto">
-                愿您永远健康、快乐、美丽，每天都像今天一样幸福甜蜜！
-            </p>
-        </header>
-
-        <!-- 蛋糕区域 -->
-        <div class="flex justify-center items-center my-12">
-            <div class="relative">
-                <!-- 蛋糕底座 -->
-                <div class="w-[clamp(180px,30vw,300px)] h-[clamp(40px,8vw,60px)] bg-dark rounded-t-full mx-auto"></div>
-
-                <!-- 蛋糕主体 -->
-                <div class="w-[clamp(150px,25vw,250px)] h-[clamp(100px,20vw,160px)] bg-gradient-to-b from-accent to-primary rounded-t-3xl mx-auto relative">
-                    <!-- 蛋糕纹理 -->
-                    <div class="absolute inset-x-0 h-1/3 bg-secondary/60 rounded-t-3xl"></div>
-                    <div class="absolute inset-x-0 top-1/3 h-1/3 bg-accent/80"></div>
-
-                    <!-- 装饰点缀 -->
-                    <div class="absolute inset-0 flex justify-center items-center gap-2 flex-wrap p-4">
-                        <div class="w-3 h-3 bg-white rounded-full animate-pulse-slow"></div>
-                        <div class="w-3 h-3 bg-pink-300 rounded-full animate-pulse-slow" style="animation-delay: 0.5s"></div>
-                        <div class="w-3 h-3 bg-yellow-300 rounded-full animate-pulse-slow" style="animation-delay: 1s"></div>
-                        <div class="w-3 h-3 bg-purple-300 rounded-full animate-pulse-slow" style="animation-delay: 1.5s"></div>
-                        <div class="w-3 h-3 bg-blue-300 rounded-full animate-pulse-slow" style="animation-delay: 2s"></div>
-                    </div>
-
-                    <!-- 蜡烛 -->
-                    <div class="absolute top-[-30px] left-1/2 transform -translate-x-1/2 flex gap-4">
-                        <div class="flex flex-col items-center">
-                            <div class="candle-flame"></div>
-                            <div class="w-2 h-[25px] bg-white"></div>
-                        </div>
-                        <div class="flex flex-col items-center" style="animation-delay: 0.3s">
-                            <div class="candle-flame"></div>
-                            <div class="w-2 h-[25px] bg-yellow-300"></div>
-                        </div>
-                        <div class="flex flex-col items-center" style="animation-delay: 0.6s">
-                            <div class="candle-flame"></div>
-                            <div class="w-2 h-[25px] bg-pink-300"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 祝福卡片 -->
-        <div class="max-w-2xl mx-auto bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-2 border-primary/30 mb-10 animate-float" style="animation-delay: 1s">
-            <div class="text-center space-y-4">
-                <p class="text-[clamp(1rem,2vw,1.25rem)] text-dark leading-relaxed">
-                    亲爱的妈妈：<br><br>
-                    感谢您多年来的辛勤付出和无私关爱，<br>
-                    您的爱是我生命中最温暖的阳光。<br>
-                    愿岁月善待您，让您永远年轻美丽，<br>
-                    健康快乐，幸福安康！<br><br>
-                    爱您的孩子 ❤️
-                </p>
-            </div>
-        </div>
-
-        <!-- 底部装饰 -->
-        <footer class="text-center text-dark/70 text-sm pt-4">
-            <p>❤️ 祝您生日快乐，幸福永远 ❤️</p>
-        </footer>
+<body>
+    <h1>贪吃蛇游戏</h1>
+    <div class="game-info">
+        <span>分数: <span id="score">0</span></span>
+        <span>控制: 方向键</span>
     </div>
-
-    <!-- 音频元素 -->
-    <audio id="birthday-music" loop>
-        <source src="https://cdn.jsdelivr.net/npm/birthday-music@1.0.0/birthday.mp3" type="audio/mpeg">
-        您的浏览器不支持音频播放
-    </audio>
+    <canvas id="game-board" width="400" height="400"></canvas>
+    <div id="game-over">游戏结束！点击重新开始</div>
+    <button id="restart-btn">重新开始</button>
 
     <script>
-        // 爱心飘落效果
-        function createHearts() {
-            const container = document.getElementById('hearts-container');
-            const colors = ['#FF6B8B', '#FF9EBB', '#FFD1DC', '#FF4560', '#FF8A9A'];
+        // 获取DOM元素
+        const canvas = document.getElementById('game-board');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const gameOverElement = document.getElementById('game-over');
+        const restartBtn = document.getElementById('restart-btn');
 
-            setInterval(() => {
-                const heart = document.createElement('div');
-                heart.classList.add('heart');
+        // 游戏配置
+        const gridSize = 20; // 网格大小（每个格子的像素）
+        const tileCount = canvas.width / gridSize; // 网格数量
 
-                // 随机位置和样式
-                const left = Math.random() * 100;
-                const size = Math.random() * 15 + 10;
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                const delay = Math.random() * 5;
-                const duration = Math.random() * 5 + 3;
+        // 蛇的初始状态
+        let snake = [
+            { x: 10, y: 10 } // 初始位置（网格坐标）
+        ];
+        let direction = 'right'; // 初始方向
+        let nextDirection = 'right'; // 下一个方向（防止180度转弯）
+        let food = spawnFood(); // 食物位置
+        let score = 0;
+        let gameLoop;
+        let gameRunning = false;
 
-                heart.style.left = `${left}%`;
-                heart.style.width = `${size}px`;
-                heart.style.height = `${size}px`;
-                heart.style.backgroundColor = color;
-                heart.style.animationDelay = `${delay}s`;
-                heart.style.animationDuration = `${duration}s`;
-
-                // 伪元素颜色
-                heart.style.setProperty('--heart-color', color);
-
-                container.appendChild(heart);
-
-                // 移除已落地的爱心
-                setTimeout(() => {
-                    heart.remove();
-                }, duration * 1000);
-            }, 300);
+        // 生成食物（随机位置，不与蛇身重叠）
+        function spawnFood() {
+            let newFood;
+            do {
+                newFood = {
+                    x: Math.floor(Math.random() * tileCount),
+                    y: Math.floor(Math.random() * tileCount)
+                };
+            } while (snake.some(segment => segment.x === newFood.x && segment.y === newFood.y));
+            return newFood;
         }
 
-        // 音乐播放控制
-        function initMusicPlayer() {
-            const music = document.getElementById('birthday-music');
-            const button = document.getElementById('play-music');
-            let isPlaying = false;
-
-            button.addEventListener('click', () => {
-                if (isPlaying) {
-                    music.pause();
-                    button.innerHTML = '<i class="fa fa-music"></i> 播放生日歌';
-                } else {
-                    music.play().catch(error => {
-                        alert('请点击页面任意位置后再尝试播放音乐');
-                        // 监听用户交互后自动播放
-                        document.body.addEventListener('click', () => {
-                            music.play();
-                        }, { once: true });
-                    });
-                    button.innerHTML = '<i class="fa fa-pause"></i> 暂停生日歌';
-                }
-                isPlaying = !isPlaying;
+        // 绘制蛇
+        function drawSnake() {
+            ctx.fillStyle = '#4CAF50';
+            snake.forEach(segment => {
+                ctx.fillRect(
+                    segment.x * gridSize,
+                    segment.y * gridSize,
+                    gridSize - 1, // 减1留出间隙
+                    gridSize - 1
+                );
             });
         }
 
-        // 页面加载完成后初始化
-        window.addEventListener('load', () => {
-            createHearts();
-            initMusicPlayer();
+        // 绘制食物
+        function drawFood() {
+            ctx.fillStyle = '#F44336';
+            ctx.fillRect(
+                food.x * gridSize,
+                food.y * gridSize,
+                gridSize - 1,
+                gridSize - 1
+            );
+        }
 
-            // 显示欢迎提示
-            setTimeout(() => {
-                alert('祝妈妈生日快乐！点击播放按钮聆听生日歌～');
-            }, 1000);
-        });
+        // 更新游戏状态
+        function update() {
+            // 更新方向
+            direction = nextDirection;
+
+            // 创建新蛇头
+            const head = { ...snake[0] };
+            switch (direction) {
+                case 'up': head.y--; break;
+                case 'down': head.y++; break;
+                case 'left': head.x--; break;
+                case 'right': head.x++; break;
+            }
+
+            // 添加新蛇头到数组开头
+            snake.unshift(head);
+
+            // 检查是否吃到食物
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                scoreElement.textContent = score;
+                food = spawnFood(); // 生成新食物
+            } else {
+                snake.pop(); // 没吃到食物则移除尾部
+            }
+
+            // 检查碰撞
+            if (checkCollision()) {
+                endGame();
+                return;
+            }
+        }
+
+        // 检查碰撞（边界或自身）
+        function checkCollision() {
+            const head = snake[0];
+            // 边界碰撞
+            if (
+                head.x < 0 ||
+                head.x >= tileCount ||
+                head.y < 0 ||
+                head.y >= tileCount
+            ) {
+                return true;
+            }
+            // 自身碰撞（检查蛇头是否与身体其他部分重叠）
+            return snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y);
+        }
+
+        // 结束游戏
+        function endGame() {
+            clearInterval(gameLoop);
+            gameRunning = false;
+            gameOverElement.style.display = 'block';
+        }
+
+        // 绘制游戏画面
+        function draw() {
+            // 清空画布
+            ctx.fillStyle = '#2d2d2d';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            drawSnake();
+            drawFood();
+        }
+
+        // 游戏主循环
+        function gameLoopFunction() {
+            update();
+            draw();
+        }
+
+        // 控制方向（防止180度转弯）
+        function handleKeydown(e) {
+            switch (e.key) {
+                case 'ArrowUp':
+                    if (direction !== 'down') nextDirection = 'up';
+                    break;
+                case 'ArrowDown':
+                    if (direction !== 'up') nextDirection = 'down';
+                    break;
+                case 'ArrowLeft':
+                    if (direction !== 'right') nextDirection = 'left';
+                    break;
+                case 'ArrowRight':
+                    if (direction !== 'left') nextDirection = 'right';
+                    break;
+                case 'Enter': // 按回车开始游戏
+                    if (!gameRunning) startGame();
+                    break;
+            }
+        }
+
+        // 开始游戏
+        function startGame() {
+            // 重置游戏状态
+            snake = [{ x: 10, y: 10 }];
+            direction = 'right';
+            nextDirection = 'right';
+            food = spawnFood();
+            score = 0;
+            scoreElement.textContent = score;
+            gameOverElement.style.display = 'none';
+            gameRunning = true;
+
+            // 启动游戏循环（150ms/帧，可调整速度）
+            clearInterval(gameLoop);
+            gameLoop = setInterval(gameLoopFunction, 150);
+        }
+
+        // 事件监听
+        document.addEventListener('keydown', handleKeydown);
+        restartBtn.addEventListener('click', startGame);
+
+        // 页面加载完成后自动开始游戏
+        window.addEventListener('load', startGame);
     </script>
 </body>
 </html>
